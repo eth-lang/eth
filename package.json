@@ -1,0 +1,12 @@
+{
+  "name": "eth",
+  "version": "4.0.0",
+  "description": "",
+  "main": "eth.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Frederic Gingras <frederic@gingras.cc>",
+  "license": "MIT"
+}

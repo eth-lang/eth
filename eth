@@ -1,0 +1,203 @@
+#!/usr/bin/env node
+
+require('./tokens');
+
+var NODES = {
+  ROOT: 'root',
+  NIL: 'nil',
+  BOOLEAN: 'bool',
+  NUMBER: 'number',
+  STRING: 'string',
+  SYMBOL: 'symbol',
+  ARRAY: 'array',
+  OBJECT: 'object',
+  CALL: 'call',
+  REF: 'REF',
+  BLOCK: 'block'
+};
+
+var tokens;
+var index;
+var token;
+
+function readList(ast, endCh) {
+  while (true) {
+    index = index + 1;
+    token = tokens[index];
+    if (!token) {
+      throw new Error('unterminated list starting at ' + ast.token.from + '\nstart: ' +
+        token.nodes.map(function(node) { return node.nodes ? '<list|object|call>' : node.value; }).join(' '));
+    }
+    if (token.type === 'operator' && token.value === endCh) {
+        return;
+    }
+    readToken(ast, token);
+  }
+}
+
+function readToken(ast, token) {
+    if (token.type === 'name' && token.value === 'nil') {
+      ast.nodes.push({type: NODES.NIL, token: token, value: undefined});
+      return;
+    }
+    if (token.type === 'name' && token.value === 'true') {
+      ast.nodes.push({type: NODES.BOOLEAN, token: token, value: true});
+      return;
+    }
+    if (token.type === 'name' && token.value === 'false') {
+      ast.nodes.push({type: NODES.BOOLEAN, token: token, value: false});
+      return;
+    }
+    if (token.type === 'number') {
+      ast.nodes.push({type: NODES.NUMBER, token: token, value: token.value});
+      return;
+    }
+    if (token.type === 'string') {
+      ast.nodes.push({type: NODES.STRING, token: token, value: token.value});
+      return;
+    }
+    if (token.type === 'operator' && token.value === '[') {
+      ast.nodes.push({type: NODES.ARRAY, token: token, nodes: []});
+      readList(ast.nodes[ast.nodes.length-1], ']');
+      return;
+    }
+    if (token.type === 'operator' && token.value === '{') {
+      ast.nodes.push({type: NODES.OBJECT, token: token, nodes: []});
+      readList(ast.nodes[ast.nodes.length-1], '}');
+      return;
+    }
+    if (token.type === 'operator' && token.value === '(') {
+      ast.nodes[ast.nodes.length-1] = {
+        type: NODES.CALL,
+        token: token,
+        calee: ast.nodes[ast.nodes.length-1],
+        nodes: []
+      };
+      readList(ast.nodes[ast.nodes.length-1], ')');
+      return;
+    }
+    if (token.type === 'operator' && token.value === '.') {
+      var refAst = {nodes: []};
+      index = index + 1;
+      token = tokens[index];
+
+      // If next token is . too, it's not a ref but a symbol
+      if (token.value === '.') {
+        ast.nodes.push({type: NODES.SYMBOL, token: tokens[index-1], value: '..'});
+        return;
+      }
+
+      readToken(refAst, token);
+      ast.nodes[ast.nodes.length-1] = {
+        type: NODES.REF,
+        token: token,
+        left: ast.nodes[ast.nodes.length-1],
+        right: refAst.nodes[0]
+      };
+      return;
+    }
+    ast.nodes.push({type: NODES.SYMBOL, token: token, value: token.value});
+    // throw new Error('unhandled token: ' + JSON.stringify(token));
+}
+
+function read(code) {
+  var ast = {
+    type: NODES.ROOT,
+    nodes: []
+  };
+
+  tokens = code.tokens('', '');
+  index = -1;
+
+  while (true) {
+    index = index + 1;
+    token = tokens[index];
+    if (!token) {
+      break;
+    }
+
+    readToken(ast, token);
+  }
+
+  return ast;
+}
+
+function write(ast) {
+  return ast;
+}
+
+function prettyPrint(ast) {
+  function prettyPrintNode(node) {
+    if (node.type === NODES.ROOT) {
+      return node.nodes.map(prettyPrintNode).join('\n');
+    }
+    if (node.type === NODES.ARRAY) {
+      return '[' + node.nodes.map(prettyPrintNode).join(' ') + ']';
+    }
+    if (node.type === NODES.OBJECT) {
+      return '{' + node.nodes.map(prettyPrintNode).join(' ') + '}';
+    }
+    if (node.type === NODES.CALL) {
+      return prettyPrintNode(node.calee) + '(' + node.nodes.map(prettyPrintNode).join(' ') + ')';
+    }
+    if (node.type === NODES.REF) {
+      return prettyPrintNode(node.left) + '.' + prettyPrintNode(node.right);
+    }
+    if (node.type === NODES.SYMBOL) {
+      return node.value;
+    }
+    return node.value === undefined ? 'undefined' : JSON.stringify(node.value);
+  }
+  return prettyPrintNode(ast);
+}
+
+function compile(code) {
+  return prettyPrint(write(read(code)));
+}
+
+function indent(jsCode) {
+  var out = '';
+  var indentWidth = '';
+  var inString = false;
+  for (var i = 0; i < jsCode.length; i++) {
+    if (jsCode[i] === '}' && !inString) {
+      indentWidth = indentWidth.slice(0, -2);
+      out += '\n' + indentWidth;
+    }
+
+    out += jsCode[i];
+    if (jsCode[i] === '"' && (jsCode[i-1] !== '\\' || (jsCode[i-1] === '\\' &&jsCode[i-2] === '\\' ))) {
+      inString = !inString;
+    }
+
+    if (jsCode[i] === '{' && !inString) {
+      indentWidth += '  ';
+      out += '\n' + indentWidth;
+    }
+    if (jsCode[i] === ';' && !inString) {
+      if (jsCode[i + 1] !== '}') {
+        out += '\n' + indentWidth;
+      }
+    }
+  }
+  return out;
+}
+
+// cli
+if (process.stdin.isTTY) {
+  console.log('eth needs a file in stdin to compile!');
+  process.exit(1);
+}
+
+var chunks = [];
+process.stdin.setEncoding('utf-8');
+process.stdin.on('readable', function() {
+  var chunk = process.stdin.read();
+  if (chunk !== null) {
+    chunks.push(chunk);
+  }
+});
+process.stdin.on('end', function() {
+    var body = chunks.join('');
+    process.stdout.write(compile(body) + '\n');
+});

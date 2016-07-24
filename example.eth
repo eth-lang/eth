@@ -1,0 +1,17 @@
+nil
+true
+false
+5
+0.4
+1.234
+"asd"
+"as\nd"
+[]
+[1 2 3]
+{a 1 b 2}
+a(b c)
+a.0
+a.b
+fn(x .. y :
+  +(x y)
+)
