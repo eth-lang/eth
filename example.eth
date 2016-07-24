@@ -12,6 +12,7 @@ false
 a(b c)
 a.0
 a.b
+||(x &&(x y))
 fn(x .. y :
   +(x y)
 )

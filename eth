@@ -106,7 +106,7 @@ function read(code) {
     nodes: []
   };
 
-  tokens = code.tokens('', '');
+  tokens = code.tokens('=<>!+-*&|/%^', '=<>&|');
   index = -1;
 
   while (true) {
@@ -122,8 +122,84 @@ function read(code) {
   return ast;
 }
 
+function escapeSymbol(symbol) {
+  // special
+  symbol = symbol.replace(/\./g, '_dot_');
+  symbol = symbol.replace(/!/g, '_bang_');
+  symbol = symbol.replace(/\?/g, '_q_');
+  symbol = symbol.replace(/-/g, '_');
+
+  // operators
+  symbol = symbol.replace(/\+/g, 'sum');
+  symbol = symbol.replace(/-/g, 'sub');
+  symbol = symbol.replace(/\*/g, 'mult');
+  symbol = symbol.replace(/\//g, 'div');
+  symbol = symbol.replace(/%/g, 'mod');
+  symbol = symbol.replace(/==/g, 'isEqual');
+  symbol = symbol.replace(/!=/g, 'isNotEqual');
+  symbol = symbol.replace(/<=/g, 'isLowerOrEqual');
+  symbol = symbol.replace(/>=/g, 'isGreaterOrEqual');
+  symbol = symbol.replace(/</g, 'isLower');
+  symbol = symbol.replace(/>/g, 'isGreater');
+  symbol = symbol.replace(/\|\|/g, 'or');
+  symbol = symbol.replace(/&&/g, 'and');
+
+  // reserved
+  symbol = symbol.replace(/^export$/g, '_export');
+  symbol = symbol.replace(/^import$/g, '_import');
+  symbol = symbol.replace(/^in$/g, '_in');
+  symbol = symbol.replace(/^instanceof$/g, '_instanceof');
+  symbol = symbol.replace(/^new$/g, '_new');
+  symbol = symbol.replace(/^throw$/g, '_throw');
+  symbol = symbol.replace(/^try$/g, '_try');
+  symbol = symbol.replace(/^typeof$/g, '_typeof');
+  symbol = symbol.replace(/^void$/g, '_void');
+  return symbol;
+}
+
+function writeNode(node) {
+  if (node.type === NODES.ROOT) {
+    return node.nodes.map(writeNode).join('\n');
+  }
+  if (node.type === NODES.ARRAY) {
+    return '[' + node.nodes.map(writeNode).join(', ') + ']';
+  }
+  if (node.type === NODES.OBJECT) {
+    if (node.nodes.length % 2 !== 0) {
+      throw new Error('object literal contains an odd number of elements, need a value for each key' +
+        '\ngiven: ' + prettyPrintNode(node));
+    }
+    var out = '';
+    for (var i = 0; i < node.nodes.length; i++) {
+      if (i % 2 === 0) {
+        out = out + writeNode(node.nodes[i]) + ': ';
+      } else {
+        out = out + writeNode(node.nodes[i]);
+        if (i !== node.nodes.length - 1) {
+          out = out + ', ';
+        }
+      }
+    }
+    return '{' + out.trim() + '}';
+  }
+  if (node.type === NODES.CALL) {
+    return writeNode(node.calee) + '(' + node.nodes.map(writeNode).join(', ') + ')';
+  }
+  if (node.type === NODES.REF) {
+    // symbol to the right? use dot deref notation
+    if (node.right.type === NODES.SYMBOL) {
+      return writeNode(node.left) + '.' + writeNode(node.right);
+    }
+    return writeNode(node.left) + '[' + writeNode(node.right) + ']';
+  }
+  if (node.type === NODES.SYMBOL) {
+    return escapeSymbol(node.value);
+  }
+  return node.value === undefined ? 'undefined' : JSON.stringify(node.value);
+}
+
 function write(ast) {
-  return ast;
+  return writeNode(ast);
 }
 
 function prettyPrint(ast) {
@@ -152,7 +228,7 @@ function prettyPrint(ast) {
 }
 
 function compile(code) {
-  return prettyPrint(write(read(code)));
+  return write(read(code));
 }
 
 function indent(jsCode) {
@@ -199,5 +275,5 @@ process.stdin.on('readable', function() {
 });
 process.stdin.on('end', function() {
     var body = chunks.join('');
-    process.stdout.write(compile(body) + '\n');
+    process.stdout.write(indent(compile(body)) + '\n');
 });
