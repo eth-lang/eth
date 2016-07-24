@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+// eth compiler
 
 // read {{{
 require('./tokens');
@@ -396,54 +396,10 @@ function indent(jsCode) {
 }
 // }}}
 
-// cli {{{
-function runHelp() {
-  console.log([
-    'Usage: eth [command] [arguments]',
-    '',
-    'Commands:',
-    '  h, help     prints this message',
-    '  v, version  prints eth\'s version',
-    '  r, repl     starts the repl (TODO)',
-    '  e, evel     runs given file or code (TODO)',
-    '  b, build    builds the given file (TODO)',
-    '',
-    'eth also works using stdin & stdout like so: eth <app.eth >app.js',
-    '',
-    'Documentation can be found at http://eth-lang.com'
-  ].join('\n'));
-  process.exit(1);
-}
-
-function runVersion() {
-  var version = require('./package.json').version;
-  console.log('eth version ' + version);
-  process.exit(0);
-}
-
-var commandName = process.argv[2];
-if (commandName === 'h' || commandName === 'help') {
-  runHelp();
-}
-if (commandName === 'v' || commandName === 'version') {
-  runVersion();
-}
-
-// at this point we didn't handle any command let's ensure we are not a tty and use stdin as input
-if (process.stdin.isTTY) {
-  runHelp();
-}
-
-var chunks = [];
-process.stdin.setEncoding('utf-8');
-process.stdin.on('readable', function() {
-  var chunk = process.stdin.read();
-  if (chunk !== null) {
-    chunks.push(chunk);
-  }
-});
-process.stdin.on('end', function() {
-    var body = chunks.join('');
-    process.stdout.write(indent(compile(body)) + '\n');
-});
-// }}}
+module.exports = {
+  read: read,
+  write: write,
+  prettyPrint: prettyPrint,
+  indent: indent,
+  compile: compile
+};

@@ -1,12 +1,23 @@
 {
   "name": "eth",
-  "version": "4.0.0",
-  "description": "",
+  "version": "0.0.1",
+  "description": "A fun, productive, and simple functional language that compiles to JavaScript.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eth-lang/eth.git"
+  },
+  "bugs": {
+    "url": "https://github.com/eth-lang/eth/issues"
+  },
+  "homepage": "https://github.com/eth-lang/eth#readme",
+  "keywords": [],
+  "author": "Frederic Gingras <frederic@gingras.cc>",
+  "license": "MIT",
+  "bin": {
+    "eth": "bin/eth"
+  },
   "main": "eth.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "Frederic Gingras <frederic@gingras.cc>",
-  "license": "MIT"
+  }
 }
