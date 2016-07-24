@@ -116,6 +116,10 @@ delete -> delete a.b
 fn fn(a b {+(a b)}) -> function (a, b) { return a + b; }
 cond cond(==(a b) a :else b) -> if (a == b) { return a } else { return b }
 loop
+or
+and
+package
+import
 ```
 
 ## standard library

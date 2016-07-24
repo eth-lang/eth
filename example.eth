@@ -14,7 +14,7 @@ a(b c)
 a.0
 a.b
 get(a b)
-||(x &&(x y))
+||(x &&(x y) <(1 2))
 fn(x y +(x y))
 fn()
 fn({})

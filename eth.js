@@ -148,12 +148,12 @@ function escapeSymbol(symbol) {
 
   // operators
   symbol = symbol.replace(/\+/g, 'sum');
-  symbol = symbol.replace(/-/g, 'sub');
-  symbol = symbol.replace(/\*/g, 'mult');
-  symbol = symbol.replace(/\//g, 'div');
-  symbol = symbol.replace(/%/g, 'mod');
-  symbol = symbol.replace(/==/g, 'equal');
-  symbol = symbol.replace(/!=/g, 'notEqual');
+  symbol = symbol.replace(/-/g, 'subtract');
+  symbol = symbol.replace(/\*/g, 'multiply');
+  symbol = symbol.replace(/\//g, 'divive');
+  symbol = symbol.replace(/%/g, 'modulo');
+  symbol = symbol.replace(/==/g, 'eq');
+  symbol = symbol.replace(/!=/g, 'notEq');
   symbol = symbol.replace(/<=/g, 'lowerOrEqual');
   symbol = symbol.replace(/>=/g, 'greaterOrEqual');
   symbol = symbol.replace(/</g, 'lower');
@@ -276,6 +276,13 @@ function writeCall(node) {
       }
     }
     return result.join(' else ');
+  }
+
+  if (calleeName === 'or' || calleeName === '||') {
+    return '(' + node.nodes.map(writeNode).join(' || ') + ')';
+  }
+  if (calleeName === 'and' || calleeName === '&&') {
+    return '(' + node.nodes.map(writeNode).join(' && ') + ')';
   }
 
   return writeNode(node.callee) + '(' + node.nodes.map(writeNode).join(', ') + ')';
