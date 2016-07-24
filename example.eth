@@ -16,3 +16,4 @@ a.b
 fn(x .. y :
   +(x y)
 )
+// set get delete def cond fn

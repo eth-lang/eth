@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+// read {{{
 require('./tokens');
 
 var NODES = {
@@ -70,7 +71,7 @@ function readToken(ast, token) {
       ast.nodes[ast.nodes.length-1] = {
         type: NODES.CALL,
         token: token,
-        calee: ast.nodes[ast.nodes.length-1],
+        callee: ast.nodes[ast.nodes.length-1],
         nodes: []
       };
       readList(ast.nodes[ast.nodes.length-1], ')');
@@ -121,6 +122,9 @@ function read(code) {
 
   return ast;
 }
+// }}}
+
+// write {{{
 
 function escapeSymbol(symbol) {
   // special
@@ -128,6 +132,7 @@ function escapeSymbol(symbol) {
   symbol = symbol.replace(/!/g, '_bang_');
   symbol = symbol.replace(/\?/g, '_q_');
   symbol = symbol.replace(/-/g, '_');
+  symbol = symbol.replace(/#/g, '_hash_');
 
   // operators
   symbol = symbol.replace(/\+/g, 'sum');
@@ -143,6 +148,7 @@ function escapeSymbol(symbol) {
   symbol = symbol.replace(/>/g, 'isGreater');
   symbol = symbol.replace(/\|\|/g, 'or');
   symbol = symbol.replace(/&&/g, 'and');
+  symbol = symbol.replace(/=/g, 'set');
 
   // reserved
   symbol = symbol.replace(/^export$/g, '_export');
@@ -157,9 +163,55 @@ function escapeSymbol(symbol) {
   return symbol;
 }
 
+function writeCall(node) {
+  var calleeName;
+  if (node.callee.type === NODES.SYMBOL) {
+    calleeName = node.callee.value;
+  }
+
+  if (calleeName === 'ffi') {
+    // TODO check that we have exatly one arg this is a string
+    return node.nodes[0].value;
+  }
+
+  if (calleeName === 'fn') {
+    var metSeparator = false;
+    var argNodes = [];
+    var bodyNodes = [];
+
+    for (var i = 0; i < node.nodes.length; i++) {
+      var currentNode = node.nodes[i];
+      if (currentNode.type === NODES.SYMBOL && currentNode.value === ':') {
+        metSeparator = true;
+      } else if (!metSeparator && currentNode.type === NODES.SYMBOL && currentNode.value === '..') {
+        i++;
+        bodyNodes.push({
+          type: NODES.CALL,
+          callee: {type: NODES.SYMBOL, value: 'ffi'},
+          nodes: [{
+            type: NODES.STRING,
+            value: 'var ' + escapeSymbol(node.nodes[i].value) + ' = Array.prototype.slice.call(arguments, ' + (i - 1) + ')'
+          }]
+        });
+      } else if (!metSeparator) {
+        argNodes.push(currentNode);
+      } else {
+        bodyNodes.push(currentNode);
+      }
+    }
+
+    return '(function ('
+      + argNodes.map(writeNode).join(', ') + ') {'
+      + bodyNodes.slice(0, -1).map(writeNode).join(';') + (bodyNodes.length > 1 ? ';' : '')
+      + 'return ' + writeNode(bodyNodes[bodyNodes.length - 1]) + ';})';
+  }
+
+  return writeNode(node.callee) + '(' + node.nodes.map(writeNode).join(', ') + ')';
+}
+
 function writeNode(node) {
   if (node.type === NODES.ROOT) {
-    return node.nodes.map(writeNode).join('\n');
+    return node.nodes.map(writeNode).join(';\n');
   }
   if (node.type === NODES.ARRAY) {
     return '[' + node.nodes.map(writeNode).join(', ') + ']';
@@ -183,7 +235,7 @@ function writeNode(node) {
     return '{' + out.trim() + '}';
   }
   if (node.type === NODES.CALL) {
-    return writeNode(node.calee) + '(' + node.nodes.map(writeNode).join(', ') + ')';
+    return writeCall(node);
   }
   if (node.type === NODES.REF) {
     // symbol to the right? use dot deref notation
@@ -201,7 +253,15 @@ function writeNode(node) {
 function write(ast) {
   return writeNode(ast);
 }
+// }}}
 
+// compile {{{
+function compile(code) {
+  return write(read(code));
+}
+// }}}
+
+// pretty {{{
 function prettyPrint(ast) {
   function prettyPrintNode(node) {
     if (node.type === NODES.ROOT) {
@@ -214,7 +274,7 @@ function prettyPrint(ast) {
       return '{' + node.nodes.map(prettyPrintNode).join(' ') + '}';
     }
     if (node.type === NODES.CALL) {
-      return prettyPrintNode(node.calee) + '(' + node.nodes.map(prettyPrintNode).join(' ') + ')';
+      return prettyPrintNode(node.callee) + '(' + node.nodes.map(prettyPrintNode).join(' ') + ')';
     }
     if (node.type === NODES.REF) {
       return prettyPrintNode(node.left) + '.' + prettyPrintNode(node.right);
@@ -225,10 +285,6 @@ function prettyPrint(ast) {
     return node.value === undefined ? 'undefined' : JSON.stringify(node.value);
   }
   return prettyPrintNode(ast);
-}
-
-function compile(code) {
-  return write(read(code));
 }
 
 function indent(jsCode) {
@@ -258,8 +314,9 @@ function indent(jsCode) {
   }
   return out;
 }
+// }}}
 
-// cli
+// cli {{{
 if (process.stdin.isTTY) {
   console.log('eth needs a file in stdin to compile!');
   process.exit(1);
@@ -277,3 +334,4 @@ process.stdin.on('end', function() {
     var body = chunks.join('');
     process.stdout.write(indent(compile(body)) + '\n');
 });
+// }}}
