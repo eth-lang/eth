@@ -1,0 +1,12 @@
+var readFileSync = require('fs').readFileSync;
+var eth = require('./eth');
+
+var compilePath = function(path) {
+  var source = readFileSync(path, 'utf8');
+  return eth.compile(source);
+}
+
+// Register the `.eth` file extension so that modules can simply be required.
+require.extensions['.eth'] = function(module, filename) {
+  module._compile(compilePath(filename), filename);
+};

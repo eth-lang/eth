@@ -31,8 +31,6 @@
   </a>
 </p>
 
-_A fun, productive, and simple functional language that compiles to JavaScript._
-
 ## intro
 
 *eth* is a small in surface, small in code, easy to master, easy to adopt,
@@ -111,12 +109,12 @@ Documentation can be found at http://eth-lang.com
 ## language built-ins
 
 ```
-get
-set
-let
-delete
-fn
-cond
+get -> a[b]
+set -> a = b
+let -> var a = b
+delete -> delete a.b
+fn fn(a b {+(a b)}) -> function (a, b) { return a + b; }
+cond cond(==(a b) a :else b) -> if (a == b) { return a } else { return b }
 loop
 ```
 
@@ -240,4 +238,4 @@ make test
 
 # license
 
-MIT
+MIT, see [`LICENSE`](https://github.com/eth-lang/eth/blob/master/LICENSE) file.
