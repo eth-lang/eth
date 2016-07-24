@@ -6,14 +6,21 @@ false
 1.234
 "asd"
 "as\nd"
+:keyword!
 []
 [1 2 3]
-{a 1 b 2}
+{:a 1 :b 2}
 a(b c)
 a.0
 a.b
 ||(x &&(x y))
-fn(x .. y :
-  +(x y)
-)
+fn(x y +(x y))
+fn()
+fn({})
+fn({:a 1})
+fn({{}})
+fn(x y z {})
+fn(message {
+  console.log(message)
+})
 // set get delete def cond fn

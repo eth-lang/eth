@@ -23,9 +23,10 @@ you can do in JavaScript can be done in *eth*.
 | **boolean** | `true` | same as JS booleans |
 | **number** | `1.23` | same as JS numbers |
 | **string** | `"xyz"` | same as JS strings |
+| **keyword** | `:xyz` | similar to ruby keywords, translates to a string |
 | **symbol** | `x` | translates to the symbol itself but supports special characters disalowed in JS |
 | **array** | `[1 2 3]` | same as JS arrays, but, you drop the commas |
-| **object** | `{a 1 b 2}` | same as JS objects, but, you drop the commas and colons |
+| **object** | `{:a 1 :b 2}` | same as JS objects, but, you drop the commas and colons |
 
 # built-in's
 
