@@ -49,5 +49,5 @@ process.stdin.on('readable', function() {
 });
 process.stdin.on('end', function() {
     var body = chunks.join('');
-    process.stdout.write(eth.indent(eth.compile(body)) + '\n');
+    process.stdout.write(eth.indent(eth.compile(body)));
 });

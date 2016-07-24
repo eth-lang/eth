@@ -1,8 +1,8 @@
 // eth compiler
+require('./tokens');
+var core = require('./core');
 
 // read {{{
-require('./tokens');
-
 var NODES = {
   ROOT: 'root',
   NIL: 'nil',
@@ -344,7 +344,17 @@ function write(ast) {
 
 // compile {{{
 function compile(code) {
-  return write(read(code));
+  var prelude = '';
+  var result = write(read(code));
+
+  // now, let prepend the prelude, but, only for the functions possibly used in the compiled code
+  core.forEach(function(coreFnName) {
+    if (result.indexOf(coreFnName) > 0) {
+      prelude += 'var ' + coreFnName + ' = require("eth/core").' + coreFnName + ';';
+    }
+  }, core.keys(core));
+
+  return prelude + '\n' + result + '\n';
 }
 // }}}
 
