@@ -152,12 +152,12 @@ function escapeSymbol(symbol) {
   symbol = symbol.replace(/\*/g, 'mult');
   symbol = symbol.replace(/\//g, 'div');
   symbol = symbol.replace(/%/g, 'mod');
-  symbol = symbol.replace(/==/g, 'isEqual');
-  symbol = symbol.replace(/!=/g, 'isNotEqual');
-  symbol = symbol.replace(/<=/g, 'isLowerOrEqual');
-  symbol = symbol.replace(/>=/g, 'isGreaterOrEqual');
-  symbol = symbol.replace(/</g, 'isLower');
-  symbol = symbol.replace(/>/g, 'isGreater');
+  symbol = symbol.replace(/==/g, 'equal');
+  symbol = symbol.replace(/!=/g, 'notEqual');
+  symbol = symbol.replace(/<=/g, 'lowerOrEqual');
+  symbol = symbol.replace(/>=/g, 'greaterOrEqual');
+  symbol = symbol.replace(/</g, 'lower');
+  symbol = symbol.replace(/>/g, 'greater');
   symbol = symbol.replace(/\|\|/g, 'or');
   symbol = symbol.replace(/&&/g, 'and');
   symbol = symbol.replace(/=/g, 'set');
@@ -175,6 +175,7 @@ function escapeSymbol(symbol) {
   return symbol;
 }
 
+// default to a simple function call but handles all the builtins like fn, cond & more
 function writeCall(node) {
   var calleeName;
   if (node.callee.type === NODES.SYMBOL) {
@@ -207,7 +208,7 @@ function writeCall(node) {
 
     node.nodes.slice(0, -1).forEach(function (node) {
       if (node.type != NODES.SYMBOL) {
-        throw new Error('function parameter ' + prettyPrint(node) + ' can only be of type symbol');
+        throw new Error('builtin "fn" parameter "' + prettyPrint(node) + '" is not of type symbol');
       }
     });
 
@@ -220,6 +221,61 @@ function writeCall(node) {
     return '(function ('
       + node.nodes.slice(0, -1).map(writeNode).join(', ') + ') {' + prelude + 'return '
       + writeNode(bodyNode) + ';})';
+  }
+
+  if (calleeName === 'get') {
+    if (node.nodes.length !== 2) {
+      throw new Error('builtin "get" takes exactly 2 params: key and target, got: '
+        + prettyPrint(node));
+    }
+    return writeNode(node.nodes[0]) + '[' + writeNode(node.nodes[1]) + ']'
+  }
+
+  if (calleeName === 'set' || calleeName === '=') {
+    if (node.nodes.length !== 2) {
+      throw new Error('builtin "set" takes exactly 2 params: name and value, got: '
+        + prettyPrint(node));
+    }
+    return writeNode(node.nodes[0]) + ' = ' + writeNode(node.nodes[1])
+  }
+
+  if (calleeName === 'let') {
+    if (node.nodes.length !== 2) {
+      throw new Error('builtin "let" takes exactly 2 params: name and value, got: '
+        + prettyPrint(node));
+    }
+    if (node.nodes[0].type !== NODES.SYMBOL) {
+      throw new Error('builtin "let" need a symbol as first parameter, got: '
+        + prettyPrint(node));
+    }
+    return 'var ' + writeNode(node.nodes[0]) + ' = ' + writeNode(node.nodes[1])
+  }
+
+  if (calleeName === 'delete') {
+    if (node.nodes.length !== 2) {
+      throw new Error('builtin "delete" takes exactly 1 param: target, got: '
+        + prettyPrint(node));
+    }
+    return 'delete ' + writeNode(node.nodes[0]);
+  }
+
+  if (calleeName === 'cond') {
+    if (node.nodes.length % 2 !== 0) {
+      throw new Error('builtin "cond" needs a pair amount of items, (condition result)*, got: '
+        + prettyPrint(node));
+    }
+    var result = [];
+    for (var i = 0; i < node.nodes.length; i++) {
+      if (i % 2 === 1) {
+        var ifBody = '{return ' + writeNode(node.nodes[i]) + ';}';
+        if (node.nodes[i - 1].type === NODES.KEYWORD && node.nodes[i - 1].value === 'else') {
+          result.push(ifBody);
+        } else {
+          result.push('if (' + writeNode(node.nodes[i - 1]) + ') ' + ifBody);
+        }
+      }
+    }
+    return result.join(' else ');
   }
 
   return writeNode(node.callee) + '(' + node.nodes.map(writeNode).join(', ') + ')';

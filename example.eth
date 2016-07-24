@@ -13,6 +13,7 @@ false
 a(b c)
 a.0
 a.b
+get(a b)
 ||(x &&(x y))
 fn(x y +(x y))
 fn()
@@ -23,4 +24,12 @@ fn(x y z {})
 fn(message {
   console.log(message)
 })
-// set get delete def cond fn
+=(x 8)
+set(a.b "asd")
+set(get(a b) "asd")
+let(a 1)
+cond(
+  ==(x y) 1
+  :else 2
+)
+// comment

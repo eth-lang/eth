@@ -33,10 +33,11 @@ you can do in JavaScript can be done in *eth*.
 ```
 get
 set
+let
 delete
-def
 fn
 cond
+loop
 ```
 
 # license
