@@ -102,7 +102,7 @@ Documentation can be found at http://eth-lang.com
 | **number** | `1.23` | same as JS numbers |
 | **string** | `"xyz"` | same as JS strings |
 | **keyword** | `:xyz` | similar to ruby keywords, translates to a string |
-| **symbol** | `x` | translates to the symbol itself but supports special characters disalowed in JS |
+| **symbol** | `x` | translates to the symbol itself but supports special characters disallowed in JS |
 | **array** | `[1 2 3]` | same as JS arrays, but, you drop the commas |
 | **object** | `{:a 1 :b 2}` | same as JS objects, but, you drop the commas and colons |
 
@@ -121,14 +121,18 @@ loop
 ## standard library
 
 The standard library is, at it's core, composed of all the functions in [Ramda.js](http://ramdajs.com/).
-`ramda` is a realy library packed with small utility functions that all have a well designed functionnal
-api.
+`ramda` is a really neat library packed with small utility functions that all have a well designed
+functional api.
 
-If you are interested in functional programming and using `eth` I then strongly encorage you pass by
-ramda's awesome [documentation](http://ramdajs.com/0.21.0/docs/) and read the introductary post
+Similar to `lodash` and `underscore` you might say but there is a fundamental difference in how `ramda`
+orders the arguments it's functions take that makes it especially suitable for currying, composing
+and functional programming in general.
+
+If you are interested in functional programming and using `eth` I then strongly encourage you pass by
+ramda's awesome [documentation](http://ramdajs.com/0.21.0/docs/) and read the introductory post
 [Why Ramda?](http://fr.umio.us/why-ramda/).
 
-In adition to the functions from `ramda`, `eth` defined a few more useful function like `to-json`,
+In addition to the functions from `ramda`, `eth` defined a few more useful function like `to-json`,
 `print`, `assert` and more. They are all listed below.
 
 ```
