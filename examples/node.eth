@@ -1,0 +1,16 @@
+// run from this repo using: eth <examples/node.eth | sed 's:eth/core:./core:' | node
+
+let(http require("http"))
+
+let(hostname "127.0.0.1")
+let(port 3000)
+
+let(server http.createServer(fn(req res {
+  =(res.statusCode 200)
+  res.setHeader("Content-Type" "text/plain")
+  res.end("Hello World\n")
+})))
+
+server.listen(port hostname fn(
+  print(string("Server running at http://" hostname ":" port "/"))
+))

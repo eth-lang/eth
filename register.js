@@ -3,7 +3,7 @@ var eth = require('./eth');
 
 var compilePath = function(path) {
   var source = readFileSync(path, 'utf8');
-  return eth.compile(source);
+  return eth.indent(eth.compile(source));
 }
 
 // Register the `.eth` file extension so that modules can simply be required.

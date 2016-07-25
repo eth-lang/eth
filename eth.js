@@ -28,7 +28,7 @@ function readList(ast, endCh) {
     token = tokens[index];
     if (!token) {
       throw new Error('unterminated list starting at ' + ast.token.from + '\nstart: ' +
-        token.nodes.map(function(node) { return node.nodes ? '<list|object|call>' : node.value; }).join(' '));
+        prettyPrint(ast));
     }
     if (token.type === 'operator' && token.value === endCh) {
         return;
@@ -175,6 +175,10 @@ function escapeSymbol(symbol) {
   return symbol;
 }
 
+function wrapInIife(code) {
+  return '(function () {' + code + '}).call(this)';
+}
+
 // default to a simple function call but handles all the builtins like fn, cond & more
 function writeCall(node) {
   var calleeName;
@@ -259,6 +263,17 @@ function writeCall(node) {
     return 'delete ' + writeNode(node.nodes[0]);
   }
 
+  if (calleeName === 'if') {
+    if (node.nodes.length < 2 || node.nodes.length > 3) {
+      throw new Error('builtin "if" a minimum of 2 and a maximum of 3 arguments (condition then else), got: '
+        + prettyPrint(node));
+    }
+    var thenBody = '{return ' + writeNode(node.nodes[1]) + ';}';
+    var elseBody = '{return ' + (node.nodes[2] ? writeNode(node.nodes[2]) : 'undefined') + ';}';
+    return wrapInIife('if (' + writeNode(node.nodes[0]) + ') '
+      + thenBody + ' else ' + elseBody);
+  }
+
   if (calleeName === 'cond') {
     if (node.nodes.length % 2 !== 0) {
       throw new Error('builtin "cond" needs a pair amount of items, (condition result)*, got: '
@@ -275,7 +290,7 @@ function writeCall(node) {
         }
       }
     }
-    return result.join(' else ');
+    return wrapInIife(result.join(' else '));
   }
 
   if (calleeName === 'or' || calleeName === '||') {
@@ -283,6 +298,13 @@ function writeCall(node) {
   }
   if (calleeName === 'and' || calleeName === '&&') {
     return '(' + node.nodes.map(writeNode).join(' && ') + ')';
+  }
+  if ('+-*/'.indexOf(calleeName) > -1) {
+    if (node.nodes.length < 2) {
+      throw new Error('builtin "' + calleeName + '" needs a minimum of 2 arguments, got: '
+        + prettyPrint(node));
+    }
+    return '(' + node.nodes.map(writeNode).join(' ' + calleeName + ' ') + ')';
   }
 
   return writeNode(node.callee) + '(' + node.nodes.map(writeNode).join(', ') + ')';
@@ -349,7 +371,7 @@ function compile(code) {
 
   // now, let prepend the prelude, but, only for the functions possibly used in the compiled code
   core.forEach(function(coreFnName) {
-    if (result.indexOf(coreFnName) > 0) {
+    if (result.indexOf(coreFnName) > -1) {
       prelude += 'var ' + coreFnName + ' = require("eth/core").' + coreFnName + ';';
     }
   }, core.keys(core));

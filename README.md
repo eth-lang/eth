@@ -5,19 +5,19 @@
   <i>A fun, productive, and simple functional language that compiles to JavaScript.</i>
 </p>
 <p align="center">
-  <a href="https://github.com/eth-lang/eth-lang#intro">intro</a>
+  <a href="https://github.com/eth-lang/eth#intro">intro</a>
   &nbsp;|&nbsp;
-  <a href="https://github.com/eth-lang/eth-lang#running">running</a>
+  <a href="https://github.com/eth-lang/eth#running">running</a>
   &nbsp;|&nbsp;
-  <a href="https://github.com/eth-lang/eth-lang#language-types">types</a>
+  <a href="https://github.com/eth-lang/eth#language-types">types</a>
   &nbsp;|&nbsp;
-  <a href="https://github.com/eth-lang/eth-lang#language-built-ins">built-ins</a>
+  <a href="https://github.com/eth-lang/eth#language-built-ins">built-ins</a>
   &nbsp;|&nbsp;
-  <a href="https://github.com/eth-lang/eth-lang#standard-library">standard library</a>
+  <a href="https://github.com/eth-lang/eth#standard-library">standard library</a>
   &nbsp;|&nbsp;
-  <a href="https://github.com/eth-lang/eth-lang#using-eth-for-your-next-project">using eth for a project</a>
+  <a href="https://github.com/eth-lang/eth#using-eth-for-your-next-project">using eth for a project</a>
   &nbsp;|&nbsp;
-  <a href="https://github.com/eth-lang/eth-lang#developing">developing</a>
+  <a href="https://github.com/eth-lang/eth#developing">developing</a>
 </p>
 <p align="center">
   <a href="https://circleci.com/gh/eth-lang/eth">
@@ -33,16 +33,37 @@
 
 ## intro
 
-*eth* is a small in surface, small in code, easy to master, easy to adopt,
-functional language that will bring productivity and joy to your day
-programming.
+*eth* is a small in surface, small in code, easy to master, easy to adopt, functional language
+that will bring productivity and joy to your day programming.
+
+**simple**
 
 I tries really hard to have a unified interface, and a small amount of primitives keeping JavaScript's
 awesome core and avoid all the new reserved words and doubtedly useful features recent versions of
 JavaScript are rapidly adding.
 
-*eth* does all that while really staying close to JavaScript's true nature and ecosystem. Anything
-you can do in JavaScript can be done in *eth*.
+**close to JavaScript**
+
+*eth* remains very close to JavaScript, except for the lispyier syntax primitives are almost
+all written the same way, it's compatible with the whole JS exosystem, and it support all of ES5
+features so, we could bet you wont feel lost when writing your first bits of *eth* code.
+
+```cljs
+let(http require("http"))
+
+let(hostname "127.0.0.1")
+let(port 3000)
+
+let(server http.createServer(fn(req res {
+  =(res.statusCode 200)
+  res.setHeader("Content-Type" "text/plain")
+  res.end("Hello World\n")
+})))
+
+server.listen(port hostname fn(
+  print(string("Server running at http://" hostname ":" port "/"))
+))
+```
 
 ## running
 
@@ -84,9 +105,9 @@ Usage: eth [command] [arguments]
 Commands:
   h, help     prints this message
   v, version  prints eth's version
-  r, repl     starts the repl (TODO)
-  e, eval     runs given file or code (TODO)
-  b, build    builds the given file (TODO)
+  r, repl     starts the repl
+  e, eval     runs given file or code
+  b, build    builds the given file
 
 eth also works using stdin & stdout like so: eth <app.eth >app.js
 
@@ -115,11 +136,9 @@ let -> var a = b
 delete -> delete a.b
 fn fn(a b {+(a b)}) -> function (a, b) { return a + b; }
 cond cond(==(a b) a :else b) -> if (a == b) { return a } else { return b }
-loop
-or
-and
-package
-import
+loop -> TODO use recursion!
+package -> TODO use set(module.exports { ... })
+import -> TODO use let(fs require("fs"))
 ```
 
 ## standard library
@@ -142,9 +161,10 @@ In addition to the functions from `ramda`, `eth` defined a few more useful funct
 ```
 print assert
 toJson fromJson
+string type isOfType
+isOdd isEven
 regexp regexpMatch regexpFind regexpReplace
-getIn setIn
-type isOfType
+getIn setIn updateIn
 ```
 
 ## using eth for your next project
