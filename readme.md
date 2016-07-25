@@ -266,4 +266,4 @@ make test
 
 # license
 
-MIT, see [`LICENSE`](https://github.com/eth-lang/eth/blob/master/LICENSE) file.
+MIT, see [`license`](https://github.com/eth-lang/eth/blob/master/license) file.
