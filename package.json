@@ -1,6 +1,6 @@
 {
   "name": "eth",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "A fun, productive, and simple functional language that compiles to JavaScript.",
   "repository": {
     "type": "git",

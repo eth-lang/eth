@@ -48,7 +48,7 @@ JavaScript are rapidly adding.
 all written the same way, it's compatible with the whole JS exosystem, and it support all of ES5
 features so, we could bet you wont feel lost when writing your first bits of *eth* code.
 
-```cljs
+```js
 let(http require("http"))
 
 let(hostname "127.0.0.1")
@@ -77,7 +77,7 @@ There a **repl** you can start with:
 
 ```
 $ eth repl
-eth> (+ 3 5)
+eth> +(3 5)
 8
 eth>
 ```

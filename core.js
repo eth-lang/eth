@@ -90,6 +90,14 @@ core.string = function string() {
   return args.join('');
 };
 
+core.isPair = function isPair(x) {
+  return x % 2 === 0;
+};
+
+core.isOdd = function isOdd(x) {
+  return x % 2 === 1;
+};
+
 core.type = function type(value) {
   if (Array.isArray(value)) {
     return 'array';
@@ -100,16 +108,8 @@ core.type = function type(value) {
   return typeof value;
 };
 
-core.isPair = function isPair(x) {
-  return x % 2 === 0;
-};
-
-core.isOdd = function isOdd(x) {
-  return x % 2 === 1;
-};
-
 core.isOfType = function isOfType(wantedType, value) {
-  return type(value) === wantedType;
+  return core.type(value) === wantedType;
 };
 
 core.regexp = function regexp(re, options) {
@@ -129,7 +129,7 @@ core.regexpFind = function regexpFind(re, string) {
 };
 
 core.regexpReplace = function regexpReplace(re, replacement, string) {
-  return String(string).replace(regexp(re), replacement);
+  return String(string).replace(core.regexp(re), replacement);
 };
 
 // Like `assoc` but still returns array when passed numeric keys
