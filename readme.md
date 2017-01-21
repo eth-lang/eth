@@ -34,19 +34,20 @@
 ## intro
 
 *eth* is a small in surface, small in code, easy to master, easy to adopt, functional language
-that will bring productivity and joy to your day programming.
+that will bring productivity and joy to your day to day programming.
 
 **simple**
 
-I tries really hard to have a unified interface, and a small amount of primitives keeping JavaScript's
-awesome core and avoid all the new reserved words and doubtedly useful features recent versions of
-JavaScript are rapidly adding.
+I tries really hard to have a unified syntax, and a small amount of primitives. It keeps JavaScripts
+awesome core and avoid most of the new keywords and syntax JavaScript is rapidly adding to it's core.
 
 **close to JavaScript**
 
-*eth* remains very close to JavaScript, except for the lispyier syntax primitives are almost
+*eth* remains very close to JavaScript, except for the lispier syntax, primitives are almost
 all written the same way, it's compatible with the whole JS exosystem, and it support all of ES5
-features so, we could bet you wont feel lost when writing your first bits of *eth* code.
+features so, we'd bet you wont feel lost when writing your first bits of *eth* code.
+
+Here's the traditional node http server example:
 
 ```js
 let(http require("http"))
@@ -232,8 +233,8 @@ clean:
 **Option 2: Require extension**
 
 This version of getting `.eth` files to run on node.js is by far the easiest, it consists in having
-a `.js` file the simply requires `eth/register` followed by your `server.eth`, from that point on
-all `require`s resolving to `.eth` file will get compiled first, then ran.
+a `.js` file the simply requires `eth/register` followed by your `server.eth` as entrypoint, after
+that all `require`s resolving to a `.eth` file will get compiled to js first, then ran.
 
 ```js
 // bootstrap.js
@@ -244,11 +245,11 @@ require('./server');
 ### library
 
 You will probably want to have two directories, say `src` for `.eth` source files and a `lib` or
-`build` folder for compiled javascript.
+`build` folder for compiled javascript files.
 
 That way people consuming your library don't even need to know it is written in `eth` and still use
 it. To get there you'll simply have to make sure that you build all necessary `.js` files before
-commiting changes and have a line that looks like `"main": "build/index.js"` in your `package.json`.
+committing changes and have a line that looks like `"main": "build/index.js"` in your `package.json`.
 
 ## developing
 
@@ -256,7 +257,7 @@ commiting changes and have a line that looks like `"main": "build/index.js"` in 
 
 **The repl/cli tool** is implemented in `bin/eth`.
 
-**The standard library** is written in `eth` and is located in the `core.js` file.
+**The standard library** is written in `javascript` and is located in the `core.js` file.
 
 To run the test suite simply run:
 
